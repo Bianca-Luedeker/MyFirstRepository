@@ -1,0 +1,116 @@
+---
+title: "STA_445_HW5"
+author: "Bianca L."
+date: "2023-10-03"
+output: pdf_document
+---
+```{r warning=FALSE, message=FALSE}
+library(readxl)
+library(tidyverse)
+library(faraway)
+library(ggrepel)
+```
+
+### Problem 1: Chapter 14 Problem 1
+
+The `infmort` data set from the package `faraway` gives the infant mortality rate for a variety of countries. The information is relatively out of date, but will be fun to graph. Visualize the data using by creating scatter plots of mortality vs income while faceting using `region` and setting color by `oil` export status. Utilize a $\log_{10}$ transformation for both `mortality` and `income` axes. This can be done either by doing the transformation inside the `aes()` command or by utilizing the `scale_x_log10()` or `scale_y_log10()` layers. The critical difference is if the scales are on the original vs log transformed scale. Experiment with both and see which you prefer.
+    
+a)  The `rownames()` of the table gives the country names and you should create a new column that contains the country names. *`rownames`
+
+```{r}
+infmort.a <- infmort %>% mutate(Country=rownames(infmort))
+head(infmort.a)
+```
+b. Create scatter plots with the `log10()` transformation inside the `aes()`command.
+
+```{r warning=FALSE}
+ggplot(infmort.a) + 
+  geom_point(aes(x=log10(income), y= log10(mortality), color=oil)) + 
+  facet_wrap( ~ region )
+```
+
+c. Create the scatter plots using the `scale_x_log10()` and `scale_y_log10()`.Set the major and minor breaks to be useful and aesthetically pleasing.Comment on which version you find easier to read.
+
+```{r warning=FALSE}
+my.plot <- ggplot(infmort.a) + 
+  geom_point(aes(x=income, y= mortality, color=oil)) + facet_wrap( ~ region )+
+scale_y_log10(breaks=c(1,10,100),
+                  minor=c(1:10,
+                        seq( 10, 100,by=10 ),
+                        seq(100,1000,by=100))) +
+scale_x_log10(breaks=c(1,10,100),
+                  minor=c(1:10,
+                        seq( 10, 100,by=10 ),
+                        seq(100,1000,by=100))) 
+my.plot
+```
+
+The second graphs are easier to read since I don't have to exponentiate in my head.  The math is done for the reader.
+
+d.  The package `ggrepel` contains functions `geom_text_repel()` and `geom_label_repel()` that mimic the basic `geom_text()` and `geom_label()`functions in `ggplot2`, but work to make sure the labels don't overlap.  Select 10-15 countries to label and do so using the `geom_text_repel()` function.
+
+```{r}
+ annotation.data <- sample_n(infmort.a, size=10) %>% select(Country, region, income, mortality)
+
+annotation.data
+```
+
+```{r warning=FALSE}
+my.plot + 
+  geom_text_repel(data=annotation.data, aes(x=income, y=mortality, label=Country))
+```
+
+### Problem 2: Chapter 14 Problem 2
+
+Using the `datasets::trees` data, complete the following:
+
+a. Create a regression model for $y=$ `Volume` as a function of $x=$ `Height`.
+    
+```{r}
+my.mod <- lm(data=trees, Volume ~ Height)
+my.mod
+```
+b. Using the `summary` command, get the y-intercept and slope of the regression line.
+
+```{r}
+my.slope <- round(summary(my.mod)$coefficients[2,1], 2)
+my.intercept <- round(summary(my.mod)$coefficients[1,1], 2)
+my.slope
+my.intercept
+```
+c. Using `ggplot2`, create a scatter plot of Volume vs Height. 
+
+```{r}
+plot1 <- ggplot(data=trees) + 
+  geom_point(aes(x= Height, y=Volume))
+
+plot1
+```
+d. Create a nice white filled rectangle to add text information to using by adding the following annotation layer.
+
+```{r}
+plot2 <- plot1 + 
+  annotate('rect', xmin=65, xmax=75, ymin=60, ymax=74, fill='white', color='black') 
+plot2
+```
+e. Add some annotation text to write the equation of the line
+        $\hat{y}_i = -87.12 + 1.54 * x_i$ in the text area.
+```{r, warning=FALSE}
+plot3 <- plot2 + 
+  annotate('text', x=70,  y=70, label=latex2exp::TeX("$\\hat{y}_i = -87.12 + 1.54 * x_i$"))
+plot3
+```
+f.   Add annotation to add $R^2 = 0.358$
+
+```{r, warning=FALSE}
+plot4 <- plot3 + 
+  annotate('text', x=70,  y=65, label=latex2exp::TeX("$R^2 = 0.358"))
+plot4
+```
+g. Add the regression line in red. The most convenient layer function to uses is `geom_abline()`. 
+
+```{r, warning=FALSE}
+plot4 + 
+  geom_abline(slope = my.slope, intercept = my.intercept,
+                    color="red", size=1.0)
+```

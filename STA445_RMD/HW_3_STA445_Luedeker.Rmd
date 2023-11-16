@@ -1,0 +1,315 @@
+---
+title: "STA_445_HW3"
+author: "Bianca L."
+date: "2023-10-17"
+output: pdf_document
+---
+```{r message=TRUE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(stringr)
+library(lubridate)
+library(mosaicData)
+```
+
+### Problem 1: Chapter 11 Problem 1
+
+For the following regular expression, explain in words what it matches on. Then add test strings to demonstrate that it in fact does match on the pattern you claim it does. Make sure that your test set of strings has several examples that match as well as several that do not. 
+
+a. This regular expression matches:  any string with at least one lower case a.
+```{r}
+        strings <- c("poop", "ahole", "a", "Angelique Smells like doo doo",
+                     "Calliope is a dork!", "Aaah Real Monsters")
+        data.frame( string = strings ) %>%
+        mutate( result = str_detect(string, 'a') )
+```
+
+
+b. This regular expression matches:  The expression must have exactly "ab" in it
+in that order.
+```{r}
+
+        strings <- c("angelique stinks", "bianca rules", "abra abra cadbra I wanna reach out and grab ya", "banana", "jkjkabjkjk")
+        data.frame( string = strings ) %>%
+          mutate( result = str_detect(string, 'ab') )
+```
+
+c. This regular expression matches: If there is either an "a" or "b" in the expression.
+
+```{r, eval=FALSE}
+        strings <- c("anglique is a loser", "bianca rules, nathaniel drools",  "Nacho Flay died this morning.  Thought you should know.", "Tom Jones!")
+        data.frame( string = strings ) %>%
+          mutate( result = str_detect(string, '[ab]') )
+```
+
+
+d. This regular expression matches:  The string must BEGIN with either an "a" or a "b".
+
+```{r, eval=FALSE}
+        strings <- c("ABBA", "acha", "abba", "biabiabiabia!", "pysduck")
+        data.frame( string = strings ) %>%
+          mutate( result = str_detect(string, '^[ab]') )
+```
+
+e. This regular expression matches:  Any number of digits followed by a white space followed by either "a" or "A".
+
+```{r, eval=FALSE}
+        strings <- c("365 days a year", "785 apples", "6apples", "6 Apples", "apples")
+        data.frame( string = strings ) %>%
+          mutate( result = str_detect(string, '\\d+\\s[aA]') )
+```
+
+This regular expression matches:  Any number of digits followed by zero or more white spaces, followed by either "a" or "A".
+```{r, eval=FALSE}
+        strings <- c("16 Candles", "16 apples", "16apples", "16 Apples")
+        data.frame( string = strings ) %>%
+          mutate( result = str_detect(string, '\\d+\\s*[aA]') )
+```
+
+g. This regular expression matches:  This matches with zero or more characters.  Even white space and nothing at all is a character.  This one is impossible to get a FALSE.
+```{r, eval=FALSE}
+        strings <- c("", "grumble", "997 tofu", " ")
+        data.frame( string = strings ) %>%
+          mutate( result = str_detect(string, '.*') )
+```
+
+h. This regular expression matches: Matches anything that begins with two digits or two letters followed by the word bar.
+
+```{r, eval=FALSE}
+        strings <- c("12bar", "  bar", "123bar", "aabar", "**bar")
+        data.frame( string = strings ) %>%
+    mutate( result = str_detect(string, '^\\w{2}bar') )
+```
+
+i. This regular expression matches: Any string that begins with two digits or two letters followed by the word bar OR contains the string "foo" followed by a period, followed by "bar".
+
+```{r, eval=FALSE}
+        strings <- c("aabar", "12bar", "foo.bar", "footbar", "foo bar")
+        data.frame( string = strings ) %>%
+          mutate( result = str_detect(string, '(foo\\.bar)|(^\\w{2}bar)') )
+```
+    
+
+### Problem 2: Chapter 11 Problem 2
+
+The following file names were used in a camera trap study. The S number represents the site, P is the plot within a site, C is the camera number within the plot, the first string of numbers is the YearMonthDay and the second string of numbers is the HourMinuteSecond.
+
+```{r}
+    file.names <- c( 'S123.P2.C10_20120621_213422.jpg',
+                     'S10.P1.C1_20120622_050148.jpg',
+                     'S187.P2.C2_20120702_023501.jpg')
+```
+
+Produce a data frame with columns corresponding to the `site`, `plot`, `camera`, `year`, `month`, `day`, `hour`, `minute`, and `second` for these three file names. So we want to produce code that will create the data frame:
+    
+```{r}
+data.frame(str_split_fixed(file.names, pattern='[_, .]', n=6)) %>%
+  mutate(Site = X1, 
+         Plot = X2,
+         Camera = X3,
+         Year = str_sub(X4, start=1, end=4), 
+         Month = str_sub(X4, start = 5, end = 6),
+         Day = str_sub(X4, start = 7, end = 8),
+         Hour = str_sub(X5, start = 1, end=2), 
+         Minute = str_sub(X5, start =3, end=4),
+         Second = str_sub(X5, start=5, end=6)) %>%
+  select(Site, Plot, Camera, Year, Month, Day, Hour, Minute, Second)
+  
+```
+
+### Poblem 3: Chapter 11 Problem 3
+
+The full text from Lincoln's Gettysburg Address is given below. Calculate the mean word length *Note: consider 'battle-field' as one word with 11 letters*).
+
+```{r, include=FALSE}
+Gettysburg <- 'Four score and seven years ago our fathers brought forth on this 
+continent, a new nation, conceived in Liberty, and dedicated to the proposition 
+that all men are created equal. Now we are engaged in a great civil war, testing whether that nation, or any 
+nation so conceived and so dedicated, can long endure. We are met on a great 
+battle-field of that war. We have come to dedicate a portion of that field, as 
+a final resting place for those who here gave their lives that that nation might 
+live. It is altogether fitting and proper that we should do this. But, in a larger sense, we can not dedicate -- we can not consecrate -- we can 
+not hallow -- this ground. The brave men, living and dead, who struggled here, 
+have consecrated it, far above our poor power to add or detract. The world will 
+little note, nor long remember what we say here, but it can never forget what 
+they did here. It is for us the living, rather, to be dedicated here to the 
+unfinished work which they who fought here have thus far so nobly advanced. It 
+is rather for us to be here dedicated to the great task remaining before us -- 
+that from these honored dead we take increased devotion to that cause for which 
+they gave the last full measure of devotion -- that we here highly resolve that 
+these dead shall not have died in vain -- that this nation, under God, shall 
+have a new birth of freedom -- and that government of the people, by the people, 
+for the people, shall not perish from the earth.'
+```
+
+OKAY! Let's do this!
+
+
+
+```{r}
+Gettysburg1 <- str_replace_all(Gettysburg[[1]], pattern="[-\\.,\n]", replacement='') 
+
+Gettysburg2 <- str_replace_all(Gettysburg1[[1]], pattern="  ", replacement = " ")
+
+getty.list <- str_split(Gettysburg2[[1]], pattern=" ")
+
+mean(str_length(getty.list[[1]]))
+
+getty.list
+```
+
+### Problem 4: Chapter 12 Problem 1
+Convert the following to date or date/time objects.
+
+a) September 13, 2010.
+    
+```{r}
+mdy("September 13, 2010")
+```
+b) Sept 13, 2010.
+
+```{r}
+str_replace("Sept 13, 2010", "t", "") %>%
+mdy()
+```
+
+mdy is okay with the abbreviation Sep but not Sept
+
+c) Sep 13, 2010.
+
+```{r}
+mdy("Sep 13, 2010")
+```
+d) S 13, 2010. Comment on the month abbreviation needs.
+    
+```{r}
+str_replace("S 13, 2010", "S", "Sep") %>%
+mdy()
+```
+
+S is not an acceptable abbreviation of September.  It needs to be replaced with Sep.
+
+e) 07-Dec-1941.
+
+```{r}
+dmy("07-Dec-1941")
+```
+f) 1-5-1998. Comment on why you might be wrong.
+
+```{r}
+mdy("1-5-1998")
+```
+
+Since both 1 and 5 are acceptable values of for the month, it is impossible to tell if the first number is the month or the day.  Same with the second number.
+
+
+g) 21-5-1998. Comment on why you know you are correct.
+
+```{r}
+dmy("21-5-1998")
+```
+
+There is no 21st month.  Hence the first number must be the day and the second value must be the month.
+
+h) 2020-May-5 10:30 am
+
+```{r}
+ymd_hm("2020-May-5 10:30 am")
+```
+
+i) 2020-May-5 10:30 am PDT (ex Seattle)
+
+```{r}
+ymd_hm("2020-May-5 10:30 am", tz="US/Pacific")
+```
+j) 2020-May-5 10:30 am AST (ex Puerto Rico)
+
+```{r}
+ymd_hm("2020-May-5 10:30 am", tz="America/Puerto_Rico")
+```
+
+### Problem 5: Chapter 12 Problem 2
+
+Using just your date of birth (ex Sep 7, 1998) and today's date calculate the following:
+
+a) Calculate the date of your 64th birthday.
+
+```{r}
+mdy("Sep 25, 1983") + dyears(64)
+```
+    
+b) Calculate your current age (in years). 
+
+```{r}
+(age <- year(as.period(mdy_hm("Sep 25, 1983 6:05 pm", tz="US/Arizona") %--% today(), )))
+```
+
+c) Using your result in part (b), calculate the date of your next birthday.
+
+```{r}
+(next.b.day <- mdy("Sep 25, 1983") +dyears(age+1))
+```
+
+d) The number of _days_ until your next birthday.
+
+```{r}
+as.period(today()%--%next.b.day  , unit="days")
+```
+
+
+e) The number of _months_ and _days_ until your next birthday.
+as.period(today()%--%next.b.day)
+
+```{r}
+as.period(today()%--%next.b.day)
+```
+
+### Problem 6: Chapter 12 Problem 3
+
+Suppose you have arranged for a phone call to be at 3 pm on May 8, 2015 at Arizona time. However, the recipient will be in Auckland, NZ. What time will it be there? 
+
+```{r}
+mdy_hm("May 8, 2015 3:00 pm", tz="US/Arizona") %>%
+  with_tz(tzone="NZ")
+```
+
+### Problem 7: Chapter 12 Problem 5
+
+It turns out there is some interesting periodicity regarding the number of births on particular days of the year.
+
+a. Using the `mosaicData` package, load the data set `Births78` which records the number of children born on each day in the United States in 1978. Because this problem is intended to show how to calculate the information using the `date`, remove all the columns *except* `date` and `births`. 
+
+```{r}
+bday.dat <- Births78 %>% select(date, births)
+```
+
+b. Graph the number of `births` vs the `date` with date on the x-axis. What stands out to you? Why do you think we have this trend?
+
+```{r}
+ggplot(data=bday.dat) + 
+  geom_point(aes(x=date, y=births))
+```
+
+People tend to enjoy making babies when it is cold out.  There is a peak in births around August which means that people make babies around the holiday time when they are given time off and can participate in recreational activities. There is also days of the weeks where more babies are born than other days of the week. That is why we see "two" curves
+
+c. To test your assumption, we need to figure out the what day of the week each observation is. Use `dplyr::mutate` to add a new column named `dow` that is the day of the week (Monday, Tuesday, etc). This calculation will involve some function in the `lubridate` package and the `date` column.
+
+```{r}
+bday.dat2 <- bday.dat %>% mutate(dow=wday(date, label=TRUE, abbr=FALSE))
+```
+
+d. Plot the data with the point color being determined by the day of the week variable.
+
+```{r}
+ggplot(data=bday.dat2) + 
+  geom_point(aes(x=date, y=births, color=dow))
+```
+Here we can see that more babies are born on weekdays then weekends.  This is because doctors force women to have babies during the week so they don't have to work on the weekends.  For example, my little sister was born on the day after Christmas because the dumb doctor was going on vacation.  I think she was not ready to come out yet.  That is why she is the way she is.
+
+
+
+
+
+
+
+
+
